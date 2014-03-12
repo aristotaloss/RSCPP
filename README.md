@@ -1,0 +1,1 @@
+A hobby C++ learning project, resembling an emulator for RuneScape 317.
