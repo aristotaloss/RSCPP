@@ -50,10 +50,6 @@ ServerSocket::ServerSocket(const char *port, int *error) {
 	}
 }
 
-void ServerSocket::binad() {
-
-}
-
 SOCKET ServerSocket::getSocket() {
 	return listenSocket;
 }
@@ -62,6 +58,9 @@ SOCKET *ServerSocket::getPSocket() {
 	return &listenSocket;
 }
 
+/*
+Set the hints foor specified addinfo instance.
+*/
 void ServerSocket::setHints(addrinfo *hints, int family, int type, IPPROTO protocol, int flags) {
 	hints->ai_family = family;
 	hints->ai_socktype = type;
@@ -69,19 +68,26 @@ void ServerSocket::setHints(addrinfo *hints, int family, int type, IPPROTO proto
 	hints->ai_flags = flags;
 }
 
+/*
+Destructs the instance, automatically cleaning up any WSA usage and allocated data.
+*/
 ServerSocket::~ServerSocket() {
-	logf("ServerSocket destroyed!\n");
-
 	cleanup();
 	delete[] this->port;
 }
 
+/*
+Call WSACleanup to make sure WSA frees any allocations.
+*/
 void ServerSocket::cleanup(void) {
 	WSACleanup();
 }
 
+/*
+Blockingly accept a new incoming client connection, returning it as a ClientSocket.
+*/
 PClientSocket ServerSocket::acceptSocket(void) {
-	SOCKET sc = INVALID_SOCKET;
+	SOCKET sc;
 
 	// Accept a client socket
 	sc = accept(listenSocket, NULL, NULL);

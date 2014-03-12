@@ -18,7 +18,6 @@ public:
 	void setHints(addrinfo *hints, int family, int type, IPPROTO protocol, int flags);
 	void cleanup(void);
 	PClientSocket acceptSocket(void);
-	void binad(void);
 	SOCKET getSocket();
 	SOCKET *getPSocket();
 
