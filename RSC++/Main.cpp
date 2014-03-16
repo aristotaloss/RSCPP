@@ -13,21 +13,22 @@ int main(void) {
 
 	logf("We are listening on port 43594.\n");
 
-	PClientSocket client = server->acceptSocket();
-	logf("Accepted client: %d\n", (int)client);
+	while (true) {
+		ClientSocket *client = server->acceptSocket();
+		logf("Accepted new client: @0x%X\n", (int)client);
+	}
 
-	char *buffer = (char *) malloc(256);
-	memset(buffer, 0, 256);
-	//int read_ = recv(client, buffer, 256, 0);
+	/*uint8_t *buffer = new uint8_t[256];
+	memset(buffer, 0, 256); 
+	int readcnt = client->read(buffer, 256);*/
 
-	//printf("Amount read: %d.\n", read_);
-	logf("Read: %s\n", buffer);
+	//logf("Amount read: %d.\n", readcnt); 
+	//logf("Read: %s\n", buffer);
 
-	logf("deleting!\n");
-	delete server;
-	logf("deleting2!\n");
-	delete client;
-	int a;
-	std::cin >> a;
+	//delete server;
+	//delete client;
+
+	system("pause");
+
 	return 0;
 }

@@ -11,8 +11,7 @@ ServerSocket::ServerSocket(const char *port, int *error) {
 	int res = WSAStartup(MAKEWORD(2, 2), &wsa);
 
 	// Set the socket hints
-	addrinfo *pHints = new addrinfo;
-	memset(pHints, 0, sizeof(addrinfo));
+	addrinfo *pHints = new addrinfo();
 	setHints(pHints, AF_INET, SOCK_STREAM, IPPROTO_TCP, AI_PASSIVE);
 
 	// Obtain the address info based on the hints, and free up the hints.
@@ -59,7 +58,7 @@ SOCKET *ServerSocket::getPSocket() {
 }
 
 /*
-Set the hints foor specified addinfo instance.
+Set the hints for specified addinfo instance.
 */
 void ServerSocket::setHints(addrinfo *hints, int family, int type, IPPROTO protocol, int flags) {
 	hints->ai_family = family;
@@ -77,7 +76,7 @@ ServerSocket::~ServerSocket() {
 }
 
 /*
-Call WSACleanup to make sure WSA frees any allocations.
+Calls WSACleanup to make sure WSA frees any allocations.
 */
 void ServerSocket::cleanup(void) {
 	WSACleanup();
@@ -92,7 +91,7 @@ PClientSocket ServerSocket::acceptSocket(void) {
 	// Accept a client socket
 	sc = accept(listenSocket, NULL, NULL);
 	if (sc == INVALID_SOCKET) {
-		logf("accept failed: %d\n", WSAGetLastError());
+		logf("Accepting failed: %d\n", WSAGetLastError());
 		return NULL;
 	}
 
