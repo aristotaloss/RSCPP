@@ -4,6 +4,8 @@
 #include "ClientSocket.h"
 
 #define OPCODE_LOGIN_REQUEST 14
+#define OPCODE_LOGIN_DATA 16
+#define OPCODE_LOGIN_RECONNECT 18
 
 // Forward declaration
 class ClientSocket;

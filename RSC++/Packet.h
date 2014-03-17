@@ -17,6 +17,12 @@ public:
 	int getWritePos(void);
 	uint8_t *getBuffer(void);
 	void writeByte(uint8_t byte_);
+	void writeByteA(uint8_t byte_);
+	void writeOpcode(uint8_t byte_);
 	void writeShort(uint16_t short_);
+	void writeShortA(uint16_t short_);
+	void writeAShortLE(uint16_t short_);
+	void writeInt(uint32_t int_);
+	void writeLong(uint64_t long_);
 };
 

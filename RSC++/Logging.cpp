@@ -12,7 +12,6 @@ void logf(const char *format, ...) {
 	localtime_s(timeinfo, &rawtime);
 
 	strftime(buffer, 80, "[%H:%M:%S] ", timeinfo);
-	//puts(buffer);
 
 	printf(buffer);
 	vprintf(format, args);

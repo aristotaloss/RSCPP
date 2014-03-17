@@ -10,11 +10,13 @@
 #include "Logging.h"
 #include "Packet.h"
 #include "Decoder.h"
+#include "PacketSender.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
 // Forward declaration
 class Decoder;
+class PacketSender;
 
 class ClientSocket {
 private:
@@ -29,6 +31,7 @@ private:
 	char *dataBuffer;
 	int received;
 	Decoder *decoder;
+	PacketSender *sender;
 public:
 	ClientSocket(SOCKET);
 	~ClientSocket();
@@ -45,12 +48,15 @@ public:
 	GameState getGameState(void);
 	int getPacketSize(int pid);
 	void setReadState(ReadState state);
+	void setGameState(GameState state);
 	int getReceived(void);
 	void setReceived(int amt);
 	void setCurrentSize(int amt);
 	void setCurrentOpcode(int op);
 	void writePacket(Packet *packet);
 	Decoder *getDecoder(void);
+	void disconnect(void);
+	PacketSender *getSender(void);
 };
 
 typedef ClientSocket *PClientSocket;

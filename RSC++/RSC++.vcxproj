@@ -120,6 +120,8 @@
     <ClCompile Include="Logging.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Packet.cpp" />
+    <ClCompile Include="PacketSender.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="ServerSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +129,8 @@
     <ClInclude Include="Decoder.h" />
     <ClInclude Include="Logging.h" />
     <ClInclude Include="Packet.h" />
+    <ClInclude Include="PacketSender.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ServerSocket.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

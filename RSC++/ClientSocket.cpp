@@ -7,6 +7,7 @@ ClientSocket::ClientSocket(SOCKET sock) {
 	readState = ReadState::PACKET_OPCODE;
 	received = 0;
 	decoder = new Decoder(this);
+	sender = new PacketSender(this);
 
 	CreateThread(NULL, 0, &readThreadMethod, (LPVOID) this, 0, ((DWORD *)&readThreadId));
 	logf("Read thread id: %d\n", (LPVOID) this);
@@ -76,6 +77,10 @@ void ClientSocket::setReadState(ReadState state) {
 	readState = state;
 }
 
+void ClientSocket::setGameState(GameState state) {
+	gameState = state;
+}
+
 /*
  Gets the size of a packet by a specific opcode, automatically determining 
  whether login-based or prelogin-based sizes need to be used.
@@ -84,6 +89,9 @@ int ClientSocket::getPacketSize(int pid) {
 	if (gameState == GameState::PRE_GAME) {
 		if (pid == 14) {
 			return 1;
+		}
+		else if (pid == 16 || pid == 18) {
+			return -1;
 		}
 	} else if (gameState == GameState::INGAME) {
 		return PACKET_SIZES[pid];
@@ -120,6 +128,17 @@ void ClientSocket::writePacket(Packet *packet) {
 }
 
 /*
+Disconnects this client.
+*/
+void ClientSocket::disconnect(void) {
+
+}
+
+PacketSender *ClientSocket::getSender(void) {
+	return this->sender;
+}
+
+/*
 Main thread method for the byte reading
 */
 DWORD WINAPI readThreadMethod(LPVOID param) {
@@ -133,7 +152,9 @@ DWORD WINAPI readThreadMethod(LPVOID param) {
 			char *buf = (char *)malloc(1);
 			int amt = sck->read(buf, 1);
 			if (amt < 1) {
+				logf("Error in reading: %d\n", WSAGetLastError());
 				free(buf);
+				sck->disconnect();
 				return 0;
 			}
 
@@ -177,6 +198,7 @@ DWORD WINAPI readThreadMethod(LPVOID param) {
 			sck->setCurrentSize(psize);
 			sck->allocateData(psize);
 
+			free(buf);
 			logf("Waiting for %d bytes...\n", psize);
 		}
 
@@ -184,20 +206,24 @@ DWORD WINAPI readThreadMethod(LPVOID param) {
 		{
 			// Allocate how much we need
 			int psize = sck->getCurrentSize();
-			char *buf = (char *)malloc(psize);
+			char *buf = 0;
+			if (psize > 0) {
+				char *buf = (char *)malloc(psize);
 
-			// Read the required bytes
-			int amt = sck->read(buf, psize);
-			if (amt < 1) {
+				// Read the required bytes
+				int amt = sck->read(buf, psize);
+				if (amt < 1) {
+					free(buf);
+					sck->disconnect();
+					logf("Error in reading: %d\n", WSAGetLastError());
+					return 0;
+				}
+
 				free(buf);
-				logf("Error in reading: %d\n", WSAGetLastError());
-				return 0;
 			}
 
-			//if (sck->getReceived() == sck->getCurrentSize()) {
-				// We can now parse it.
-			sck->getDecoder()->decode(buf, sck->getCurrentOpcode(), amt);
-			//}
+			sck->getDecoder()->decode(buf, sck->getCurrentOpcode(), 0);
+			sck->setReadState(ReadState::PACKET_OPCODE);
 		}
 
 		}
