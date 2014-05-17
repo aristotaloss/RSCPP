@@ -8,14 +8,16 @@ ClientSocket::ClientSocket(SOCKET sock) {
 	received = 0;
 	decoder = new Decoder(this);
 	sender = new PacketSender(this);
+	player = new Player(this);
 
 	CreateThread(NULL, 0, &readThreadMethod, (LPVOID) this, 0, ((DWORD *)&readThreadId));
 	logf("Read thread id: %d\n", (LPVOID) this);
 }
 
 ClientSocket::~ClientSocket() {
-	// Delete the decoder because we won't use that anymore
+	// Delete the decoder and packet sender because we won't use that anymore
 	delete decoder;
+	delete sender;
 }
 
 int ClientSocket::read(char *buffer, int size) {
@@ -89,8 +91,7 @@ int ClientSocket::getPacketSize(int pid) {
 	if (gameState == GameState::PRE_GAME) {
 		if (pid == 14) {
 			return 1;
-		}
-		else if (pid == 16 || pid == 18) {
+		} else if (pid == 16 || pid == 18) {
 			return -1;
 		}
 	} else if (gameState == GameState::INGAME) {
@@ -124,6 +125,7 @@ Writes a packet to the buffer and automatically frees the allocated packet
 void ClientSocket::writePacket(Packet *packet) {
 	send(this->socket, (char *) packet->getBuffer(), packet->getWritePos(), 0);
 
+	packet->cleanup(); /* Release buffer */
 	delete packet;
 }
 
@@ -136,6 +138,10 @@ void ClientSocket::disconnect(void) {
 
 PacketSender *ClientSocket::getSender(void) {
 	return this->sender;
+}
+
+Player *ClientSocket::getPlayer(void) {
+	return this->player;
 }
 
 /*
@@ -206,24 +212,33 @@ DWORD WINAPI readThreadMethod(LPVOID param) {
 		{
 			// Allocate how much we need
 			int psize = sck->getCurrentSize();
-			char *buf = 0;
+			char *buf = NULL;
+			int amt = 0;
+
 			if (psize > 0) {
-				char *buf = (char *)malloc(psize);
+				buf = (char *)malloc(psize);
 
 				// Read the required bytes
-				int amt = sck->read(buf, psize);
+				amt = sck->read(buf, psize);
 				if (amt < 1) {
 					free(buf);
 					sck->disconnect();
 					logf("Error in reading: %d\n", WSAGetLastError());
 					return 0;
 				}
-
+			}
+			
+			Player *player = sck->getPlayer();
+			if (player->isInGame()) {
+				player->schedulePacket(new PendingPacket(sck->getCurrentOpcode(), sck->getCurrentSize(), (uint8_t *) buf));
+			} else {
+				sck->getDecoder()->decode(buf, sck->getCurrentOpcode(), psize);
 				free(buf);
+				_CrtDumpMemoryLeaks();
 			}
 
-			sck->getDecoder()->decode(buf, sck->getCurrentOpcode(), 0);
 			sck->setReadState(ReadState::PACKET_OPCODE);
+			
 		}
 
 		}

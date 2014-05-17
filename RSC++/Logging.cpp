@@ -17,4 +17,5 @@ void logf(const char *format, ...) {
 	vprintf(format, args);
 
 	va_end(args);
+	free(timeinfo);
 }
